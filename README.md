@@ -1,3 +1,6 @@
-# sge-nodeflow-studio-n8n-002
+# SGE NodeFlow Studio · Actividad 002 (SGE)
 
-Repositorio de la Actividad 002 (SGE) - Editor de nodos estilo n8n.
+Repositorio de entrega de la actividad “Editor de nodos n8n”.
+
+- Memoria: `Actividad_EditorNodosN8N_53945291X.md`
+- Proyecto: `sge_nodeflow_studio/`

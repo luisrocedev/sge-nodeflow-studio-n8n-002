@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SGE NodeFlow Studio</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <h1>SGE NodeFlow</h1>
+      <p class="subtitle">Editor visual de procesos empresariales</p>
+
+      <section class="panel">
+        <h2>Inicio rápido</h2>
+        <button id="btn-demo-flow" class="btn-primary full">Cargar flujo demo n8n</button>
+      </section>
+
+      <section class="panel">
+        <h2>Flujos</h2>
+        <div class="row">
+          <input id="workflow-name" placeholder="Nombre del nuevo flujo" />
+          <button id="btn-new-workflow" class="btn-primary">Crear</button>
+        </div>
+        <div id="workflow-list" class="list"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Nodos disponibles</h2>
+        <div id="node-palette" class="node-palette"></div>
+      </section>
+    </aside>
+
+    <main class="main">
+      <header class="toolbar">
+        <div>
+          <h2 id="editor-title">Sin flujo seleccionado</h2>
+          <p id="editor-subtitle">Selecciona o crea un flujo para empezar.</p>
+        </div>
+        <div id="connection-pill" class="pill">Modo normal</div>
+        <div class="actions">
+          <button id="btn-save" class="btn">Guardar</button>
+          <button id="btn-run" class="btn-primary">Ejecutar flujo</button>
+        </div>
+      </header>
+
+      <section class="canvas-wrap">
+        <svg id="edge-layer"></svg>
+        <div id="canvas" class="canvas"></div>
+      </section>
+
+      <section class="bottom-panels">
+        <div class="panel">
+          <h3>Conexiones</h3>
+          <div id="connection-help" class="help">Pulsa “Conectar” en un nodo origen y luego en nodo destino.</div>
+          <div id="edge-list" class="list compact"></div>
+        </div>
+        <div class="panel">
+          <h3>Inspector de nodo</h3>
+          <div id="inspector-empty" class="help">Selecciona un nodo para editar etiqueta y configuración.</div>
+          <div id="inspector-form" class="inspector hidden">
+            <label for="inp-node-type">Tipo</label>
+            <input id="inp-node-type" disabled />
+            <label for="inp-node-label">Etiqueta</label>
+            <input id="inp-node-label" />
+            <label for="inp-node-config">Config (JSON)</label>
+            <textarea id="inp-node-config" rows="4"></textarea>
+            <button id="btn-apply-node" class="btn-primary full">Aplicar cambios</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Última ejecución</h3>
+          <div id="run-status" class="badge">Sin ejecutar</div>
+          <div id="run-steps" class="list compact"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="node-template">
+    <article class="node-card">
+      <header>
+        <span class="tag"></span>
+        <div class="node-actions">
+          <button class="btn-mini connect">Conectar</button>
+          <button class="btn-mini danger delete">Borrar</button>
+        </div>
+      </header>
+      <strong class="node-label"></strong>
+      <small class="node-id"></small>
+    </article>
+  </template>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
