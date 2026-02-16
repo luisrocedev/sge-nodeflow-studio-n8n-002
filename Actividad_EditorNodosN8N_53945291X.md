@@ -111,3 +111,9 @@ La actividad cumple los criterios técnicos y funcionales exigidos:
 También queda preparado para defensa oral en clase gracias al flujo demo integrado y al nodo IA de ejemplo, que evidencian tanto la parte técnica como la experiencia de usuario.
 
 Como mejora futura, se propone añadir ramas condicionales avanzadas y exportación/importación JSON de plantillas de proceso.
+
+## 5. Repositorio de entrega
+
+Proyecto publicado en GitHub:
+
+- https://github.com/luisrocedev/sge-nodeflow-studio-n8n-002
