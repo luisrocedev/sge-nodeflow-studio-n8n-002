@@ -1,5 +1,6 @@
 import json
 import sqlite3
+import time
 from collections import defaultdict, deque
 from datetime import datetime, timezone
 from pathlib import Path
@@ -19,6 +20,8 @@ NODE_TYPES = {
     "notify": "Notificación al cliente",
     "archive": "Archivo ERP",
     "ai_summary": "Resumen IA (ejemplo)",
+    "conditional_check": "Decisión condicional",
+    "data_transform": "Transformación de datos",
 }
 
 app = Flask(__name__)
@@ -216,34 +219,26 @@ def execute_node(node: dict) -> dict:
     node_type = node["type"]
     label = node["label"]
     config = node.get("config", {})
+    t0 = time.perf_counter()
 
-    if node_type == "trigger":
-        return {"status": "ok", "message": f"Inicio del flujo '{label}'."}
-    if node_type == "order_input":
-        channel = config.get("channel", "web")
-        return {"status": "ok", "message": f"Pedido registrado desde canal {channel}."}
-    if node_type == "customer_check":
-        return {"status": "ok", "message": "Cliente verificado en CRM."}
-    if node_type == "stock_check":
-        warehouse = config.get("warehouse", "principal")
-        return {"status": "ok", "message": f"Stock validado en almacén {warehouse}."}
-    if node_type == "finance_approval":
-        return {"status": "ok", "message": "Aprobación financiera concedida para el pedido."}
-    if node_type == "invoice":
-        return {"status": "ok", "message": "Factura generada y vinculada al pedido."}
-    if node_type == "notify":
-        notify_channel = config.get("channel", "email")
-        return {"status": "ok", "message": f"Cliente notificado por {notify_channel}."}
-    if node_type == "archive":
-        return {"status": "ok", "message": "Pedido archivado en el ERP documental."}
-    if node_type == "ai_summary":
-        tone = config.get("tone", "profesional")
-        return {
-            "status": "ok",
-            "message": f"Resumen IA generado para dirección con tono {tone}.",
-        }
+    messages = {
+        "trigger": f"Inicio del flujo '{label}'.",
+        "order_input": f"Pedido registrado desde canal {config.get('channel', 'web')}.",
+        "customer_check": "Cliente verificado en CRM.",
+        "stock_check": f"Stock validado en almacén {config.get('warehouse', 'principal')}.",
+        "finance_approval": "Aprobación financiera concedida para el pedido.",
+        "invoice": "Factura generada y vinculada al pedido.",
+        "notify": f"Cliente notificado por {config.get('channel', 'email')}.",
+        "archive": "Pedido archivado en el ERP documental.",
+        "ai_summary": f"Resumen IA generado para dirección con tono {config.get('tone', 'profesional')}.",
+        "conditional_check": f"Condición evaluada: {config.get('condition', 'amount > 0')} → resultado OK.",
+        "data_transform": f"Datos transformados con formato {config.get('format', 'JSON')}.",
+    }
 
-    return {"status": "ok", "message": f"Nodo ejecutado: {label}."}
+    message = messages.get(node_type, f"Nodo ejecutado: {label}.")
+    elapsed_ms = round((time.perf_counter() - t0) * 1000, 2)
+
+    return {"status": "ok", "message": message, "duration_ms": elapsed_ms}
 
 
 def run_workflow(canvas: dict) -> dict:
@@ -436,6 +431,86 @@ def api_list_runs(workflow_id: int):
         items.append(payload)
 
     return jsonify({"ok": True, "items": items})
+
+
+# ── Nuevos endpoints ──────────────────────────────────────────
+
+
+@app.delete("/api/workflows/<int:workflow_id>")
+def api_delete_workflow(workflow_id: int):
+    with get_db() as conn:
+        row = conn.execute("SELECT id FROM workflows WHERE id = ?", (workflow_id,)).fetchone()
+        if not row:
+            return jsonify({"ok": False, "error": "Flujo no encontrado"}), 404
+
+        conn.execute("DELETE FROM workflow_run_steps WHERE run_id IN (SELECT id FROM workflow_runs WHERE workflow_id = ?)", (workflow_id,))
+        conn.execute("DELETE FROM workflow_runs WHERE workflow_id = ?", (workflow_id,))
+        conn.execute("DELETE FROM workflows WHERE id = ?", (workflow_id,))
+
+    return jsonify({"ok": True})
+
+
+@app.get("/api/workflows/<int:workflow_id>/export")
+def api_export_workflow(workflow_id: int):
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT name, description, canvas_json FROM workflows WHERE id = ?",
+            (workflow_id,),
+        ).fetchone()
+
+    if not row:
+        return jsonify({"ok": False, "error": "Flujo no encontrado"}), 404
+
+    export = {
+        "name": row["name"],
+        "description": row["description"],
+        "canvas": json.loads(row["canvas_json"]),
+        "exported_at": now_iso(),
+        "format": "sge-nodeflow-v1",
+    }
+
+    return jsonify({"ok": True, "export": export})
+
+
+@app.post("/api/workflows/<int:workflow_id>/duplicate")
+def api_duplicate_workflow(workflow_id: int):
+    with get_db() as conn:
+        row = conn.execute(
+            "SELECT name, description, canvas_json FROM workflows WHERE id = ?",
+            (workflow_id,),
+        ).fetchone()
+
+        if not row:
+            return jsonify({"ok": False, "error": "Flujo no encontrado"}), 404
+
+        now = now_iso()
+        new_id = conn.execute(
+            """
+            INSERT INTO workflows (name, description, canvas_json, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (f"{row['name']} (copia)", row["description"], row["canvas_json"], now, now),
+        ).lastrowid
+
+    return jsonify({"ok": True, "workflowId": new_id})
+
+
+@app.get("/api/stats")
+def api_stats():
+    with get_db() as conn:
+        total_workflows = conn.execute("SELECT COUNT(*) FROM workflows").fetchone()[0]
+        total_runs = conn.execute("SELECT COUNT(*) FROM workflow_runs").fetchone()[0]
+        total_steps = conn.execute("SELECT COUNT(*) FROM workflow_run_steps").fetchone()[0]
+
+    return jsonify({
+        "ok": True,
+        "stats": {
+            "totalWorkflows": total_workflows,
+            "totalRuns": total_runs,
+            "totalSteps": total_steps,
+            "nodeTypesAvailable": len(NODE_TYPES),
+        },
+    })
 
 
 if __name__ == "__main__":

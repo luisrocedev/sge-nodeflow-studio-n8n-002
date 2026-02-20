@@ -9,6 +9,22 @@ const state = {
 
 const $ = (id) => document.getElementById(id);
 
+/* ── Toast notifications ─────────────────────────────── */
+
+function showToast(message, type = 'info') {
+  const container = $('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 2600);
+}
+
 async function api(path, options = {}) {
   const response = await fetch(path, {
     headers: { 'Content-Type': 'application/json' },
@@ -30,6 +46,8 @@ function defaultConfigByType(type) {
   if (type === 'stock_check') return { warehouse: 'MAD-01' };
   if (type === 'notify') return { channel: 'email' };
   if (type === 'ai_summary') return { tone: 'profesional' };
+  if (type === 'conditional_check') return { condition: 'amount > 100' };
+  if (type === 'data_transform') return { format: 'JSON' };
   return {};
 }
 
@@ -95,8 +113,21 @@ function renderWorkflowList() {
   for (const item of state.workflows) {
     const card = document.createElement('article');
     card.className = 'workflow-item' + (item.id === state.currentWorkflowId ? ' active' : '');
-    card.innerHTML = `<strong>${item.name}</strong><div>${item.description || 'Sin descripción'}</div>`;
-    card.addEventListener('click', () => loadWorkflow(item.id));
+    card.innerHTML = `
+      <div class="workflow-item-body">
+        <strong>${item.name}</strong>
+        <div>${item.description || 'Sin descripción'}</div>
+      </div>
+      <div class="workflow-item-actions">
+        <button class="btn-mini" data-dup="${item.id}" title="Duplicar">⧉</button>
+        <button class="btn-mini danger" data-del="${item.id}" title="Eliminar">✕</button>
+      </div>`;
+    card.addEventListener('click', (ev) => {
+      if (ev.target.closest('button')) return;
+      loadWorkflow(item.id);
+    });
+    card.querySelector(`[data-del="${item.id}"]`).addEventListener('click', () => deleteWorkflow(item.id));
+    card.querySelector(`[data-dup="${item.id}"]`).addEventListener('click', () => duplicateWorkflow(item.id));
     list.appendChild(card);
   }
 }
@@ -388,7 +419,60 @@ function renderCanvas() {
   updateConnectionUI();
   renderInspector();
   renderEdgesList();
+  updateNodeCounter();
   requestAnimationFrame(renderEdgesSvg);
+}
+
+/* ── Workflow management ────────────────────────────── */
+
+async function deleteWorkflow(id) {
+  if (!confirm('¿Eliminar este flujo y todas sus ejecuciones?')) return;
+  await api(`/api/workflows/${id}`, { method: 'DELETE' });
+  showToast('Flujo eliminado', 'danger');
+  if (state.currentWorkflowId === id) {
+    state.currentWorkflowId = null;
+    state.currentWorkflow = null;
+  }
+  await loadWorkflows();
+}
+
+async function duplicateWorkflow(id) {
+  await api(`/api/workflows/${id}/duplicate`, { method: 'POST' });
+  showToast('Flujo duplicado');
+  await loadWorkflows();
+}
+
+async function exportWorkflow() {
+  if (!state.currentWorkflowId) return;
+  const data = await api(`/api/workflows/${state.currentWorkflowId}/export`);
+  const blob = new Blob([JSON.stringify(data.export, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${(data.export.name || 'workflow').replace(/\s+/g, '_')}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Flujo exportado como JSON');
+}
+
+async function loadStats() {
+  try {
+    const data = await api('/api/stats');
+    const el = $('stats-bar');
+    if (!el) return;
+    const s = data.stats;
+    el.innerHTML = `
+      <span class="stat-item">📊 ${s.totalWorkflows} flujos</span>
+      <span class="stat-item">▶ ${s.totalRuns} ejecuciones</span>
+      <span class="stat-item">🧩 ${s.nodeTypesAvailable} tipos de nodo</span>`;
+  } catch (_) { /* silently ignore */ }
+}
+
+function updateNodeCounter() {
+  const el = $('node-counter');
+  if (!el) return;
+  const canvas = getCanvas();
+  el.textContent = `${canvas.nodes.length} nodos · ${canvas.edges.length} conexiones`;
 }
 
 function applyNodeEdits() {
@@ -442,6 +526,7 @@ async function saveCurrentWorkflow() {
       canvas: state.currentWorkflow.canvas,
     }),
   });
+  showToast('Flujo guardado correctamente');
 }
 
 async function runCurrentWorkflow() {
@@ -449,6 +534,8 @@ async function runCurrentWorkflow() {
   await saveCurrentWorkflow();
   const data = await api(`/api/workflows/${state.currentWorkflowId}/run`, { method: 'POST' });
   renderRunResult(data.result);
+  showToast('Ejecución completada', 'ok');
+  loadStats();
 }
 
 async function loadWorkflow(id) {
@@ -493,8 +580,22 @@ async function boot() {
   $('btn-run').addEventListener('click', runCurrentWorkflow);
   $('btn-demo-flow').addEventListener('click', loadDemoFlow);
   $('btn-apply-node').addEventListener('click', applyNodeEdits);
+  $('btn-export')?.addEventListener('click', exportWorkflow);
+
+  /* Keyboard shortcuts */
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Delete' && state.selectedNodeId && !ev.target.closest('input, textarea')) {
+      deleteNode(state.selectedNodeId);
+      showToast('Nodo eliminado');
+    }
+    if ((ev.ctrlKey || ev.metaKey) && ev.key === 's' && !ev.target.closest('input, textarea')) {
+      ev.preventDefault();
+      saveCurrentWorkflow();
+    }
+  });
 
   await loadWorkflows();
+  loadStats();
 }
 
 boot().catch((err) => {

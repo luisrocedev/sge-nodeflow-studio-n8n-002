@@ -4,9 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SGE NodeFlow Studio</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔀</text></svg>" />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
+  <div id="toast-container"></div>
   <div class="app-shell">
     <aside class="sidebar">
       <h1>SGE NodeFlow</h1>
@@ -33,13 +35,16 @@
     </aside>
 
     <main class="main">
+      <div id="stats-bar" class="stats-bar"></div>
       <header class="toolbar">
         <div>
           <h2 id="editor-title">Sin flujo seleccionado</h2>
           <p id="editor-subtitle">Selecciona o crea un flujo para empezar.</p>
         </div>
+        <span id="node-counter" class="node-counter"></span>
         <div id="connection-pill" class="pill">Modo normal</div>
         <div class="actions">
+          <button id="btn-export" class="btn" title="Exportar JSON">Exportar</button>
           <button id="btn-save" class="btn">Guardar</button>
           <button id="btn-run" class="btn-primary">Ejecutar flujo</button>
         </div>
