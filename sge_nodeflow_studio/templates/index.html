@@ -4,66 +4,86 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SGE NodeFlow Studio</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔀</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#x1F500;</text></svg>" />
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
   <div id="toast-container"></div>
   <div class="app-shell">
     <aside class="sidebar">
-      <h1>SGE NodeFlow</h1>
-      <p class="subtitle">Editor visual de procesos empresariales</p>
-
-      <section class="panel">
-        <h2>Inicio rápido</h2>
-        <button id="btn-demo-flow" class="btn-primary full">Cargar flujo demo n8n</button>
-      </section>
-
-      <section class="panel">
-        <h2>Flujos</h2>
-        <div class="row">
-          <input id="workflow-name" placeholder="Nombre del nuevo flujo" />
-          <button id="btn-new-workflow" class="btn-primary">Crear</button>
+      <div class="sidebar-header">
+        <div class="logo-icon">&#x26A1;</div>
+        <div>
+          <h1>SGE NodeFlow</h1>
+          <p class="subtitle">Editor visual n8n-style</p>
         </div>
-        <div id="workflow-list" class="list"></div>
-      </section>
+      </div>
 
-      <section class="panel">
-        <h2>Nodos disponibles</h2>
-        <div id="node-palette" class="node-palette"></div>
-      </section>
+      <div class="sidebar-scroll">
+        <section class="panel">
+          <h2>Inicio r&aacute;pido</h2>
+          <button id="btn-demo-flow" class="btn-primary full">Cargar flujo demo telara&ntilde;a</button>
+        </section>
+
+        <section class="panel">
+          <h2>Flujos</h2>
+          <div class="row">
+            <input id="workflow-name" placeholder="Nombre del nuevo flujo" />
+            <button id="btn-new-workflow" class="btn-primary">Crear</button>
+          </div>
+          <div id="workflow-list" class="list"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Nodos disponibles</h2>
+          <div id="node-palette" class="node-palette"></div>
+        </section>
+      </div>
     </aside>
 
     <main class="main">
       <div id="stats-bar" class="stats-bar"></div>
       <header class="toolbar">
-        <div>
+        <div class="toolbar-info">
           <h2 id="editor-title">Sin flujo seleccionado</h2>
           <p id="editor-subtitle">Selecciona o crea un flujo para empezar.</p>
         </div>
         <span id="node-counter" class="node-counter"></span>
         <div id="connection-pill" class="pill">Modo normal</div>
         <div class="actions">
-          <button id="btn-export" class="btn" title="Exportar JSON">Exportar</button>
-          <button id="btn-save" class="btn">Guardar</button>
-          <button id="btn-run" class="btn-primary">Ejecutar flujo</button>
+          <button id="btn-export" class="btn" title="Exportar JSON">&#x1F4E5; Exportar</button>
+          <button id="btn-save" class="btn">&#x1F4BE; Guardar</button>
+          <button id="btn-run" class="btn-primary">&#x25B6; Ejecutar</button>
         </div>
       </header>
 
       <section class="canvas-wrap">
-        <svg id="edge-layer"></svg>
+        <svg id="edge-layer">
+          <defs>
+            <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+              <polygon points="0 0, 8 3, 0 6" fill="#a8a8a0" />
+            </marker>
+          </defs>
+        </svg>
         <div id="canvas" class="canvas"></div>
+
+        <div class="zoom-controls">
+          <button id="btn-zoom-in" class="btn-zoom" title="Acercar">+</button>
+          <span id="zoom-label" class="zoom-label">100%</span>
+          <button id="btn-zoom-out" class="btn-zoom" title="Alejar">&minus;</button>
+          <button id="btn-zoom-reset" class="btn-zoom" title="Reset">&#x27F3;</button>
+        </div>
       </section>
 
       <section class="bottom-panels">
         <div class="panel">
-          <h3>Conexiones</h3>
-          <div id="connection-help" class="help">Pulsa “Conectar” en un nodo origen y luego en nodo destino.</div>
+          <h3>&#x1F517; Conexiones</h3>
+          <div id="connection-help" class="help">Haz clic en el puerto &#x25CF; de salida y luego en el puerto &#x25CF; de entrada.</div>
           <div id="edge-list" class="list compact"></div>
         </div>
         <div class="panel">
-          <h3>Inspector de nodo</h3>
-          <div id="inspector-empty" class="help">Selecciona un nodo para editar etiqueta y configuración.</div>
+          <h3>&#x1F50D; Inspector de nodo</h3>
+          <div id="inspector-empty" class="help">Selecciona un nodo para editar etiqueta y configuraci&oacute;n.</div>
           <div id="inspector-form" class="inspector hidden">
             <label for="inp-node-type">Tipo</label>
             <input id="inp-node-type" disabled />
@@ -75,7 +95,7 @@
           </div>
         </div>
         <div class="panel">
-          <h3>Última ejecución</h3>
+          <h3>&#x25B6; &Uacute;ltima ejecuci&oacute;n</h3>
           <div id="run-status" class="badge">Sin ejecutar</div>
           <div id="run-steps" class="list compact"></div>
         </div>
@@ -85,15 +105,22 @@
 
   <template id="node-template">
     <article class="node-card">
-      <header>
-        <span class="tag"></span>
-        <div class="node-actions">
-          <button class="btn-mini connect">Conectar</button>
-          <button class="btn-mini danger delete">Borrar</button>
+      <div class="node-color-strip"></div>
+      <div class="port port-in" title="Entrada"></div>
+      <div class="port port-out" title="Salida"></div>
+      <div class="node-body">
+        <div class="node-header">
+          <div class="node-icon"></div>
+          <div class="node-info">
+            <strong class="node-label"></strong>
+            <div class="node-tag"></div>
+          </div>
         </div>
-      </header>
-      <strong class="node-label"></strong>
-      <small class="node-id"></small>
+        <small class="node-id-label"></small>
+      </div>
+      <div class="node-hover-actions">
+        <button class="btn-node-action delete" title="Eliminar">&#x2715;</button>
+      </div>
     </article>
   </template>
 
