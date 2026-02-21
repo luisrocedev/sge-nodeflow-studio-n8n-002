@@ -2,13 +2,13 @@
 
 ## Datos del alumno
 
-| Campo | Valor |
-|-------|-------|
-| **Nombre** | Luis Rodríguez Cedeño |
-| **DNI** | 53945291X |
-| **Asignatura** | Sistemas de Gestión Empresarial (SGE) |
-| **Ciclo** | DAM2 · Curso 2025/26 |
-| **Proyecto** | SGE NodeFlow Studio — Editor visual de procesos empresariales |
+| Campo          | Valor                                                         |
+| -------------- | ------------------------------------------------------------- |
+| **Nombre**     | Luis Rodríguez Cedeño                                         |
+| **DNI**        | 53945291X                                                     |
+| **Asignatura** | Sistemas de Gestión Empresarial (SGE)                         |
+| **Ciclo**      | DAM2 · Curso 2025/26                                          |
+| **Proyecto**   | SGE NodeFlow Studio — Editor visual de procesos empresariales |
 
 ---
 
@@ -202,14 +202,14 @@ Las aristas entre nodos se dibujan como curvas Bézier cúbicas sobre un `<svg>`
 
 ```javascript
 function renderEdgesSvg() {
-  const svg = $('edge-layer');
-  svg.innerHTML = '';
+  const svg = $("edge-layer");
+  svg.innerHTML = "";
 
-  const canvasEl = $('canvas');
+  const canvasEl = $("canvas");
   const canvasRect = canvasEl.getBoundingClientRect();
   const nodeMap = new Map();
 
-  canvasEl.querySelectorAll('.node-card').forEach((el) => {
+  canvasEl.querySelectorAll(".node-card").forEach((el) => {
     const id = el.dataset.nodeId;
     const rect = el.getBoundingClientRect();
     nodeMap.set(id, {
@@ -233,9 +233,12 @@ function renderEdgesSvg() {
     const cx1 = x1 + 70;
     const cx2 = x2 - 70;
 
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('class', 'edge-path');
-    path.setAttribute('d', `M ${x1} ${y1} C ${cx1} ${y1}, ${cx2} ${y2}, ${x2} ${y2}`);
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("class", "edge-path");
+    path.setAttribute(
+      "d",
+      `M ${x1} ${y1} C ${cx1} ${y1}, ${cx2} ${y2}, ${x2} ${y2}`,
+    );
     svg.appendChild(path);
   });
 }
@@ -257,7 +260,7 @@ function makeDraggable(card, node) {
 
   const onMove = (ev) => {
     if (!isDragging) return;
-    const canvasRect = $('canvas').getBoundingClientRect();
+    const canvasRect = $("canvas").getBoundingClientRect();
     node.x = Math.max(10, ev.clientX - offsetX - canvasRect.left);
     node.y = Math.max(10, ev.clientY - offsetY - canvasRect.top);
     card.style.left = `${node.x}px`;
@@ -268,18 +271,18 @@ function makeDraggable(card, node) {
   const stopDrag = () => {
     if (!isDragging) return;
     isDragging = false;
-    window.removeEventListener('mousemove', onMove);
-    window.removeEventListener('mouseup', stopDrag);
+    window.removeEventListener("mousemove", onMove);
+    window.removeEventListener("mouseup", stopDrag);
   };
 
-  card.addEventListener('mousedown', (ev) => {
-    if (ev.target.closest('button')) return;
+  card.addEventListener("mousedown", (ev) => {
+    if (ev.target.closest("button")) return;
     isDragging = true;
     const rect = card.getBoundingClientRect();
     offsetX = ev.clientX - rect.left;
     offsetY = ev.clientY - rect.top;
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', stopDrag);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", stopDrag);
   });
 }
 ```
@@ -310,7 +313,7 @@ function startOrCompleteConnection(nodeId) {
   }
 
   const duplicate = canvas.edges.some(
-    (edge) => edge.source === state.connectingFrom && edge.target === nodeId
+    (edge) => edge.source === state.connectingFrom && edge.target === nodeId,
   );
 
   if (!duplicate) {
@@ -374,25 +377,26 @@ Los nodos se renderizan clonando un `<template>` nativo del DOM:
 
 ```javascript
 function renderCanvas() {
-  const canvasEl = $('canvas');
-  canvasEl.innerHTML = '';
+  const canvasEl = $("canvas");
+  canvasEl.innerHTML = "";
   const canvas = getCanvas();
-  const template = document.getElementById('node-template');
+  const template = document.getElementById("node-template");
 
   canvas.nodes.forEach((node) => {
     const fragment = template.content.cloneNode(true);
-    const card = fragment.querySelector('.node-card');
+    const card = fragment.querySelector(".node-card");
 
     card.dataset.nodeId = node.id;
     card.style.left = `${node.x}px`;
     card.style.top = `${node.y}px`;
 
-    fragment.querySelector('.tag').textContent = state.nodeTypes[node.type] || node.type;
-    fragment.querySelector('.node-label').textContent = node.label;
-    fragment.querySelector('.node-id').textContent = node.id;
+    fragment.querySelector(".tag").textContent =
+      state.nodeTypes[node.type] || node.type;
+    fragment.querySelector(".node-label").textContent = node.label;
+    fragment.querySelector(".node-id").textContent = node.id;
 
-    card.addEventListener('click', (ev) => {
-      if (ev.target.closest('button')) return;
+    card.addEventListener("click", (ev) => {
+      if (ev.target.closest("button")) return;
       state.selectedNodeId = node.id;
       renderCanvas();
     });
@@ -418,26 +422,30 @@ function renderCanvas() {
 Se implementa un sistema de feedback visual y atajos para mejorar la experiencia:
 
 ```javascript
-function showToast(message, type = 'info') {
-  const container = $('toast-container');
+function showToast(message, type = "info") {
+  const container = $("toast-container");
   if (!container) return;
-  const toast = document.createElement('div');
+  const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
   toast.textContent = message;
   container.appendChild(toast);
-  requestAnimationFrame(() => toast.classList.add('show'));
+  requestAnimationFrame(() => toast.classList.add("show"));
   setTimeout(() => {
-    toast.classList.remove('show');
+    toast.classList.remove("show");
     setTimeout(() => toast.remove(), 300);
   }, 2600);
 }
 
 // Atajos de teclado en boot()
-document.addEventListener('keydown', (ev) => {
-  if (ev.key === 'Delete' && state.selectedNodeId && !ev.target.closest('input, textarea')) {
+document.addEventListener("keydown", (ev) => {
+  if (
+    ev.key === "Delete" &&
+    state.selectedNodeId &&
+    !ev.target.closest("input, textarea")
+  ) {
     deleteNode(state.selectedNodeId);
   }
-  if ((ev.ctrlKey || ev.metaKey) && ev.key === 's') {
+  if ((ev.ctrlKey || ev.metaKey) && ev.key === "s") {
     ev.preventDefault();
     saveCurrentWorkflow();
   }
@@ -478,11 +486,13 @@ def api_export_workflow(workflow_id: int):
 async function exportWorkflow() {
   if (!state.currentWorkflowId) return;
   const data = await api(`/api/workflows/${state.currentWorkflowId}/export`);
-  const blob = new Blob([JSON.stringify(data.export, null, 2)], { type: 'application/json' });
+  const blob = new Blob([JSON.stringify(data.export, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
-  a.download = `${(data.export.name || 'workflow').replace(/\s+/g, '_')}.json`;
+  a.download = `${(data.export.name || "workflow").replace(/\s+/g, "_")}.json`;
   a.click();
   URL.revokeObjectURL(url);
 }

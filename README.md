@@ -52,44 +52,45 @@ El usuario puede arrastrar nodos de negocio, conectarlos con aristas Bézier y e
 
 ## 🧩 Catálogo de Nodos Empresariales
 
-| Tipo | Etiqueta | Descripción |
-|------|----------|-------------|
-| `trigger` | Inicio | Punto de entrada del flujo |
-| `order_input` | Recepción de pedido | Captura de pedidos desde canal configurable |
-| `customer_check` | Validación cliente | Verificación CRM del cliente |
-| `stock_check` | Validación stock | Consulta de existencias por almacén |
-| `finance_approval` | Aprobación financiera | Autorización de gasto |
-| `invoice` | Generación de factura | Emisión de factura vinculada |
-| `notify` | Notificación al cliente | Envío por email/WhatsApp/SMS |
-| `archive` | Archivo ERP | Almacenamiento documental |
-| `ai_summary` | Resumen IA | Generación de resumen inteligente |
-| `conditional_check` | Decisión condicional | Evaluación de regla de negocio |
-| `data_transform` | Transformación de datos | Conversión de formato (JSON/XML/CSV) |
+| Tipo                | Etiqueta                | Descripción                                 |
+| ------------------- | ----------------------- | ------------------------------------------- |
+| `trigger`           | Inicio                  | Punto de entrada del flujo                  |
+| `order_input`       | Recepción de pedido     | Captura de pedidos desde canal configurable |
+| `customer_check`    | Validación cliente      | Verificación CRM del cliente                |
+| `stock_check`       | Validación stock        | Consulta de existencias por almacén         |
+| `finance_approval`  | Aprobación financiera   | Autorización de gasto                       |
+| `invoice`           | Generación de factura   | Emisión de factura vinculada                |
+| `notify`            | Notificación al cliente | Envío por email/WhatsApp/SMS                |
+| `archive`           | Archivo ERP             | Almacenamiento documental                   |
+| `ai_summary`        | Resumen IA              | Generación de resumen inteligente           |
+| `conditional_check` | Decisión condicional    | Evaluación de regla de negocio              |
+| `data_transform`    | Transformación de datos | Conversión de formato (JSON/XML/CSV)        |
 
 ---
 
 ## 🔌 API REST
 
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| `GET` | `/` | Interfaz principal |
-| `GET` | `/api/node-types` | Catálogo de tipos de nodo |
-| `GET` | `/api/workflows` | Listar todos los flujos |
-| `POST` | `/api/workflows` | Crear nuevo flujo |
-| `GET` | `/api/workflows/:id` | Obtener flujo por ID |
-| `PUT` | `/api/workflows/:id` | Actualizar canvas del flujo |
-| `DELETE` | `/api/workflows/:id` | Eliminar flujo y ejecuciones |
-| `POST` | `/api/workflows/:id/run` | Ejecutar flujo (orden topológico) |
-| `GET` | `/api/workflows/:id/runs` | Historial de ejecuciones |
-| `GET` | `/api/workflows/:id/export` | Exportar flujo como JSON |
-| `POST` | `/api/workflows/:id/duplicate` | Duplicar flujo existente |
-| `GET` | `/api/stats` | Estadísticas globales |
+| Método   | Endpoint                       | Descripción                       |
+| -------- | ------------------------------ | --------------------------------- |
+| `GET`    | `/`                            | Interfaz principal                |
+| `GET`    | `/api/node-types`              | Catálogo de tipos de nodo         |
+| `GET`    | `/api/workflows`               | Listar todos los flujos           |
+| `POST`   | `/api/workflows`               | Crear nuevo flujo                 |
+| `GET`    | `/api/workflows/:id`           | Obtener flujo por ID              |
+| `PUT`    | `/api/workflows/:id`           | Actualizar canvas del flujo       |
+| `DELETE` | `/api/workflows/:id`           | Eliminar flujo y ejecuciones      |
+| `POST`   | `/api/workflows/:id/run`       | Ejecutar flujo (orden topológico) |
+| `GET`    | `/api/workflows/:id/runs`      | Historial de ejecuciones          |
+| `GET`    | `/api/workflows/:id/export`    | Exportar flujo como JSON          |
+| `POST`   | `/api/workflows/:id/duplicate` | Duplicar flujo existente          |
+| `GET`    | `/api/stats`                   | Estadísticas globales             |
 
 ---
 
 ## ✨ Funcionalidades Principales
 
 ### Editor Visual
+
 - **Lienzo interactivo** con fondo de cuadrícula de puntos
 - **Drag & drop** para posicionar nodos libremente
 - **Conexiones Bézier SVG** con curvas suaves entre nodos
@@ -98,12 +99,14 @@ El usuario puede arrastrar nodos de negocio, conectarlos con aristas Bézier y e
 - **Paleta de nodos** lateral con todos los tipos disponibles
 
 ### Gestión de Flujos
+
 - Crear, guardar, duplicar, eliminar y exportar flujos
 - Flujo demo precargado con 5 nodos empresariales
 - Flujo semilla automático al iniciar por primera vez
 - Exportación JSON con formato `sge-nodeflow-v1`
 
 ### Motor de Ejecución
+
 - **Ordenación topológica** (algoritmo de Kahn) para ejecutar en secuencia correcta
 - **Detección de ciclos** para impedir grafos no válidos
 - **Simulación realista** de cada nodo con mensajes contextuales
@@ -111,6 +114,7 @@ El usuario puede arrastrar nodos de negocio, conectarlos con aristas Bézier y e
 - **Medición de rendimiento** con timestamps por nodo
 
 ### Experiencia de Usuario
+
 - **Notificaciones toast** para feedback inmediato
 - **Atajos de teclado**: `Delete` (eliminar nodo), `Ctrl+S` (guardar)
 - **Contador de nodos/conexiones** en tiempo real
@@ -204,13 +208,13 @@ CREATE TABLE workflow_run_steps (
 
 ## 🎓 Contexto Académico
 
-| Campo | Valor |
-|-------|-------|
+| Campo          | Valor                                 |
+| -------------- | ------------------------------------- |
 | **Asignatura** | Sistemas de Gestión Empresarial (SGE) |
-| **Ciclo** | DAM2 · Curso 2025/26 |
-| **Actividad** | 002 — Editor de nodos n8n |
-| **Alumno** | Luis Rodríguez Cedeño |
-| **DNI** | 53945291X |
+| **Ciclo**      | DAM2 · Curso 2025/26                  |
+| **Actividad**  | 002 — Editor de nodos n8n             |
+| **Alumno**     | Luis Rodríguez Cedeño                 |
+| **DNI**        | 53945291X                             |
 
 ---
 
